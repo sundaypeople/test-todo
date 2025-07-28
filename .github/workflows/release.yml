@@ -31,4 +31,4 @@ jobs:
                 sakura-api-secret: ${{ secrets.SAKURA_API_SECRET }}
                 container-registry: sh-kimura-docker-tutorial.sakuracr.jp  # MYREGISTRYを自分のレジストリ名に置き換えてください
                 container-registry-user: ${{ secrets.REGISTORY_USERNAME }}
-                container-registry-password: ${{ secrets.REGISTRY_PASSWORD }}
+                container-registry-password: ${{ secrets.REGISTORY_PASSWORD }}

@@ -1,0 +1,34 @@
+name: release
+
+on:
+    push:
+        branches:
+            - main
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v4
+            - name: Login to Docker Hub
+              uses: docker/login-action@v3
+              with:
+                registry: sh-kimura-docker-tutorial.sakuracr.jp
+                username: ${{ secrets.REGISTORY_USERNAME }}
+                password: ${{ secrets.REGISTORY_PASSWORD }}
+
+            - name: Build and push
+              uses: docker/build-push-action@v6
+              with:
+                push: true
+                tags: sh-kimura-docker-tutorial.sakuracr.jp/todo-handson
+
+            - name: Deploy to Sakura AppRun
+              uses: meso/sakura-apprun-action@v3
+              with:
+                sakura-api-key: ${{ secrets.SAKURA_API_KEY }}
+                sakura-api-secret: ${{ secrets.SAKURA_API_SECRET }}
+                container-registry: sh-kimura-docker-tutorial.sakuracr.jp  # MYREGISTRYを自分のレジストリ名に置き換えてください
+                container-registry-user: ${{ secrets.REGISTORY_USERNAME }}
+                container-registry-password: ${{ secrets.REGISTRY_PASSWORD }}

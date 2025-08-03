@@ -35,19 +35,6 @@ jobs:
           ref: ${{ needs.tagpr.outputs.tag }} # ← タグをチェックアウト
           fetch-depth: 0
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          registry: sh-kimura-docker-tutorial.sakuracr.jp
-          username: ${{ secrets.REGISTORY_USERNAME }}
-          password: ${{ secrets.REGISTORY_PASSWORD }}
-
-      - name: Build and push
-        uses: docker/build-push-action@v6
-        with:
-          push: true
-          tags: sh-kimura-docker-tutorial.sakuracr.jp/todo-handson
-
       - name: Deploy to Sakura AppRun
         uses: meso/sakura-apprun-action@v3
         with:

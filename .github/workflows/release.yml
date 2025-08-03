@@ -40,7 +40,7 @@ jobs:
         with:
           sakura-api-key: ${{ secrets.SAKURA_API_KEY }}
           sakura-api-secret: ${{ secrets.SAKURA_API_SECRET }}
-          container-registry: sh-kimura-docker-tutorial.sakuracr.jp
+          container-registry: ${{ vars.REGISTORY_URL}}
           container-registry-user: ${{ secrets.REGISTORY_USERNAME }}
           container-registry-password: ${{ secrets.REGISTORY_PASSWORD }}
           port: 8080

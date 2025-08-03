@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TODO LIST</title>
+    <style>
+        body {
+            background: #f7f7f7;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-top: 30px;
+        }
+        #post-form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 30px auto 20px auto;
+            max-width: 400px;
+            background: #fff;
+            padding: 24px 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+        }
+        #post-content {
+            width: 100%;
+            min-height: 60px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 10px;
+            font-size: 16px;
+            margin-bottom: 16px;
+            resize: vertical;
+        }
+        button[type="submit"] {
+            background: #4caf50;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button[type="submit"]:hover {
+            background: #388e3c;
+        }
+        #posts {
+            max-width: 400px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            padding: 20px;
+        }
+        .post-item {
+            background: #e8f5e9;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            font-size: 16px;
+            color: #333;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+                .post-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 16px 18px;
+            margin-bottom: 14px;
+            font-size: 17px;
+            color: #222;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .post-item:hover {
+            box-shadow: 0 4px 16px rgba(76,175,80,0.10);
+            transform: translateY(-2px) scale(1.01);
+        }
+        .post-desc {
+            flex: 1;
+            text-align: left;
+            word-break: break-all;
+        }
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #e53935;
+            font-size: 22px;
+            cursor: pointer;
+            padding: 0 8px;
+            border-radius: 4px;
+            transition: background 0.15s;
+        }
+        .delete-btn:hover {
+            background: #ffeaea;
+        }
+    </style>
+</head>
+<body>
+    <h1>TODO</h1>
+    <form id="post-form"  method="post" action="/save" name="description">
+        <textarea id="description" name="description"  placeholder="投稿内容"></textarea>
+        <button type="submit">投稿</button>
+    </form>
+    <div id="posts">
+        {{ range . }}
+        <div class="post-item">
+            <span class="post-desc">{{ .Description }}</span>
+            <form method="post" action="/delete?id={{ .ID }}" style="display:inline;">
+                <button type="submit" class="delete-btn" title="削除">✖</button>
+            </form>
+        </div>
+        {{ else }}
+        <div style="text-align:center;color:#aaa;">TODOはありません</div>
+        {{ end }}
+    </div>
+</body>
+</html>

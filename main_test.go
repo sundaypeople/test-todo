@@ -1,17 +1,26 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"reflect"
+	"strings"
 	"testing"
+	"text/template"
+	"todo-handson/ent/enttest"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func TestView(t *testing.T) {
-	ts := httptest.NewServer(NewMux())
+	temp := template.Must(template.ParseFiles("index.html"))
+	client := enttest.Open(t, "sqlite3", "file:todo.db?mode=memory&_fk=1")
+	defer client.Close()
+	s := Server{templates: temp, client: client}
+	ts := httptest.NewServer(NewMux(s))
 	defer ts.Close()
 
 	t.Run("testView", func(t *testing.T) {
@@ -36,15 +45,15 @@ func TestView(t *testing.T) {
 }
 
 func TestSave(t *testing.T) {
-	ts := httptest.NewServer(NewMux())
+	temp := template.Must(template.ParseFiles("index.html"))
+	client := enttest.Open(t, "sqlite3", "file:todo.db?mode=memory&_fk=1")
+	defer client.Close()
+	s := Server{templates: temp, client: client}
+	ts := httptest.NewServer(NewMux(s))
 	defer ts.Close()
-	t.Run("testSave", func(t *testing.T) {
-		send := Todo{Description: "first todo."}
+	t.Run("testDelete", func(t *testing.T) {
+		body := url.Values{"description": {"first todo."}}
 
-		body, err := json.Marshal(send)
-		if err != nil {
-			t.Fatalf("Can't Json Unmarshal: %v", err)
-		}
 		sc, b, err := sendRequest(http.MethodPost, ts.URL+"/save", body)
 		if err != nil {
 			t.Fatalf("Can't Send Http Request: %v", err)
@@ -67,7 +76,7 @@ func TestSave(t *testing.T) {
 		}
 
 		want := []GetTodo{
-			{ID: 0, Description: "first todo."},
+			{ID: 1, Description: "first todo."},
 		}
 		if !reflect.DeepEqual(got, want) {
 			t.Fatalf("got %v, want %v", got, want)
@@ -76,12 +85,13 @@ func TestSave(t *testing.T) {
 	})
 }
 
-func sendRequest(method string, url string, body []byte) (int, []byte, error) {
-	req, err := http.NewRequest(method, url, bytes.NewBuffer(body))
+func sendRequest(method string, url string, body url.Values) (int, []byte, error) {
+	req, err := http.NewRequest(method, url, strings.NewReader(body.Encode()))
 	if err != nil {
 		return 0, nil, err
 	}
 	client := new(http.Client)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	res, err := client.Do(req)
 	if err != nil {
@@ -93,30 +103,34 @@ func sendRequest(method string, url string, body []byte) (int, []byte, error) {
 }
 
 func TestDelete(t *testing.T) {
-	ts := httptest.NewServer(NewMux())
+	temp := template.Must(template.ParseFiles("index.html"))
+	client := enttest.Open(t, "sqlite3", "file:todo.db?mode=memory&_fk=1")
+	defer client.Close()
+	s := Server{templates: temp, client: client}
+	ts := httptest.NewServer(NewMux(s))
 	defer ts.Close()
 	t.Run("testSave", func(t *testing.T) {
-		send := Todo{Description: "second todo."}
-		body, err := json.Marshal(send)
-		if err != nil {
-			t.Fatalf("Can't Json Unmarshal: %v", err)
-		}
+		body := url.Values{"description": {"first todo."}}
 		sc, b, err := sendRequest(http.MethodPost, ts.URL+"/save", body)
 		if err != nil {
 			t.Fatalf("Can't Send Http Request: %v", err)
 		}
-
 		if sc != 200 {
 			t.Fatalf("Http Status Code: got %d, want %d  body:%v", sc, 200, string(b))
 		}
 
-		did := DeleteTodo{ID: 0}
-		body, err = json.Marshal(did)
+		body = url.Values{"description": {"second todo."}}
+		sc, b, err = sendRequest(http.MethodPost, ts.URL+"/save", body)
 		if err != nil {
-			t.Fatalf("Can't Json Unmarshal: %v", err)
+			t.Fatalf("Can't Send Http Request: %v", err)
+		}
+		if sc != 200 {
+			t.Fatalf("Http Status Code: got %d, want %d  body:%v", sc, 200, string(b))
 		}
 
-		sc, _, err = sendRequest(http.MethodDelete, ts.URL+"/delete", body)
+		body = url.Values{"id": {"2"}}
+
+		sc, _, err = sendRequest(http.MethodPost, ts.URL+"/delete", body)
 		if err != nil {
 			t.Fatalf("Can't Send Http Request: %v", err)
 		}
@@ -137,7 +151,7 @@ func TestDelete(t *testing.T) {
 		}
 
 		want := []GetTodo{
-			{ID: 0, Description: "second todo."},
+			{ID: 1, Description: "first todo."},
 		}
 		if !reflect.DeepEqual(got, want) {
 			t.Fatalf("got %v, want %v", got, want)
